@@ -5,6 +5,7 @@ const mainContent = document.getElementById('main-content');
 const routes = {
   '/': () => { return document.createElement('my-home-page'); },
   '/about': () => { return document.createElement('my-about-page'); },
+  '/chart': () => { return document.createElement('page-chart'); },
   '/contact': () => {
       const contactPage = document.createElement('div');
       contactPage.innerHTML = "<p>Contact us at info@example.com</p>";

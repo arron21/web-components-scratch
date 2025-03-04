@@ -605,6 +605,9 @@ const routes = {
     '/about': ()=>{
         return document.createElement('my-about-page');
     },
+    '/chart': ()=>{
+        return document.createElement('page-chart');
+    },
     '/contact': ()=>{
         const contactPage = document.createElement('div');
         contactPage.innerHTML = "<p>Contact us at info@example.com</p>";
@@ -659,8 +662,10 @@ var _myPokemonSpritesJs = require("./components/MyPokemonSprites.js");
 var _mySearchPokemonJs = require("./components/MySearchPokemon.js");
 var _clockJs = require("./components/Clock.js");
 var _timerJs = require("./components/Timer.js");
+var _chartJs = require("./components/Chart.js");
+var _pageChartJs = require("./components/PageChart.js");
 
-},{"./components/MyHomePage.js":"b3L0h","./components/MyAboutPage.js":"6SDqT","./components/MyContactPage.js":"gJgSZ","./components/MyFetchTest.js":"7AheT","./components/MyPokemonDetails.js":"f16od","./components/MyPokemonCry.js":"6YbA4","./components/MyPokemonSprites.js":"29ZLN","./components/MySearchPokemon.js":"doBR1","./components/Clock.js":"2ZPwe","./components/Timer.js":"b51J9"}],"b3L0h":[function(require,module,exports,__globalThis) {
+},{"./components/MyHomePage.js":"b3L0h","./components/MyAboutPage.js":"6SDqT","./components/MyContactPage.js":"gJgSZ","./components/MyFetchTest.js":"7AheT","./components/MyPokemonDetails.js":"f16od","./components/MyPokemonCry.js":"6YbA4","./components/MyPokemonSprites.js":"29ZLN","./components/MySearchPokemon.js":"doBR1","./components/Clock.js":"2ZPwe","./components/Timer.js":"b51J9","./components/Chart.js":"7LIXL","./components/PageChart.js":"kvNSw"}],"b3L0h":[function(require,module,exports,__globalThis) {
 class MyHomePage extends HTMLElement {
     constructor(){
         super();
@@ -1071,6 +1076,317 @@ class Timer extends HTMLElement {
     }
 }
 customElements.define('my-timer', Timer);
+
+},{}],"7LIXL":[function(require,module,exports,__globalThis) {
+function _defineProperty(e, r, t) {
+    return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+        value: t,
+        enumerable: !0,
+        configurable: !0,
+        writable: !0
+    }) : e[r] = t, e;
+}
+function _toPropertyKey(t) {
+    var i = _toPrimitive(t, "string");
+    return "symbol" == typeof i ? i : i + "";
+}
+function _toPrimitive(t, r) {
+    if ("object" != typeof t || !t) return t;
+    var e = t[Symbol.toPrimitive];
+    if (void 0 !== e) {
+        var i = e.call(t, r || "default");
+        if ("object" != typeof i) return i;
+        throw new TypeError("@@toPrimitive must return a primitive value.");
+    }
+    return ("string" === r ? String : Number)(t);
+}
+/**
+ * Chart web component using Apache ECharts, loaded dynamically.
+ * @element az-chart
+ * @property {string} data - Chart data in JSON format as a string (must be a *stringified* JSON object).
+ * @property {string} [height=400px] - Chart height in CSS format (e.g., '400px', '50vh').
+ * @property {string} [width=100%] - Chart width in CSS format.
+ * @property {string} [echartsUrl=https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js] - URL to load ECharts from.  Change this if you want to use a different CDN or a local copy.
+ */ class Chart extends HTMLElement {
+    static get observedAttributes() {
+        return [
+            'data',
+            'height',
+            'width',
+            'echarts-url'
+        ];
+    }
+    constructor(){
+        super();
+        _defineProperty(this, "handleResize", ()=>{
+            if (this._chart) this._chart.resize();
+        });
+        this._chart = null;
+        this.data = null;
+        this._height = '400px'; // Default height
+        this._width = '100%'; // Default width
+        this._echartsUrl = 'https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js'; // Default ECharts URL
+        this._echartsLoaded = false; // Flag to track if ECharts is loaded
+        this.attachShadow({
+            mode: 'open'
+        });
+    }
+    connectedCallback() {
+        this.render();
+        this.loadECharts(); // Load ECharts when the component is connected
+        // Handle resizing.  Essential for responsive layouts.
+        window.addEventListener('resize', this.handleResize);
+    }
+    disconnectedCallback() {
+        window.removeEventListener('resize', this.handleResize);
+        if (this._chart) {
+            this._chart.dispose();
+            this._chart = null;
+        }
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) return;
+        switch(name){
+            case 'data':
+                this.data = newValue;
+                this.updateChart();
+                break;
+            case 'height':
+                this._height = newValue;
+                this.updateStyle();
+                break;
+            case 'width':
+                this._width = newValue;
+                this.updateStyle();
+                break;
+            case 'echarts-url':
+                this._echartsUrl = newValue;
+                this._echartsLoaded = false; // Reset flag so it reloads
+                this.loadECharts();
+                break;
+        }
+    }
+    updateStyle() {
+        const container = this.shadowRoot.getElementById('chart-container');
+        if (container) {
+            container.style.height = this._height;
+            container.style.width = this._width;
+            if (this._chart) this._chart.resize(); // Important: resize after style changes
+        }
+    }
+    updateChart() {
+        if (!this._echartsLoaded || !this._chart || !this.data) return;
+        try {
+            const data = JSON.parse(this.data);
+            const labelOption = {
+                show: true,
+                position: 'inside',
+                distance: 20,
+                align: 'left',
+                verticalAlign: 'middle',
+                rotate: 90,
+                formatter: '{c}  {name|{a}}',
+                fontSize: 16,
+                rich: {
+                    name: {
+                        fontSize: 14
+                    }
+                }
+            };
+            data.series.forEach((item)=>{
+                item.label = labelOption;
+            });
+            const option = {
+                ...data,
+                grid: {
+                    left: '5%',
+                    right: '5%',
+                    bottom: '10%',
+                    containLabel: true
+                }
+            };
+            this._chart.setOption(option, true);
+        } catch (error) {
+            console.error("Error parsing chart data or updating chart:", error);
+        }
+    }
+    loadECharts() {
+        if (this._echartsLoaded) return; // Don't load if already loaded
+        // Check if echarts is already available globally (another component might have loaded it)
+        if (typeof echarts !== 'undefined') {
+            this._echartsLoaded = true;
+            this.initChart();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = this._echartsUrl;
+        script.async = true;
+        script.onload = ()=>{
+            this._echartsLoaded = true;
+            this.initChart();
+        };
+        script.onerror = ()=>{
+            console.error(`Failed to load ECharts from ${this._echartsUrl}`);
+        };
+        this.shadowRoot.appendChild(script); // Append to shadow DOM
+    }
+    initChart() {
+        if (this.data && this._echartsLoaded) {
+            const chartDom = this.shadowRoot.getElementById('chart-container');
+            if (!chartDom) return;
+            if (!echarts) {
+                console.error("Echarts is not loaded yet. Cannot initialize chart");
+                return;
+            }
+            this._chart = echarts.init(chartDom);
+            this.updateChart();
+            this.updateStyle();
+        }
+    }
+    render() {
+        this.shadowRoot.innerHTML = `
+        <style>
+          :host {
+            display: block;
+          }
+          #chart-container {
+            width: ${this._width};
+            height: ${this._height};
+          }
+        </style>
+        <div id="chart-container"></div>
+      `;
+    }
+}
+customElements.define('my-chart', Chart);
+
+},{}],"kvNSw":[function(require,module,exports,__globalThis) {
+class PageChart extends HTMLElement {
+    constructor(){
+        super();
+        this.attachShadow({
+            mode: 'open'
+        });
+    }
+    connectedCallback() {
+        this.render();
+    }
+    render() {
+        const chartData = {
+            title: {
+                text: "Monthly Sales and Leads Data",
+                subtext: "Demo Data",
+                left: "center",
+                top: 5
+            },
+            tooltip: {
+                trigger: "axis",
+                axisPointer: {
+                    type: "shadow"
+                }
+            },
+            legend: {
+                bottom: 0,
+                padding: 20,
+                data: [
+                    "Forest",
+                    "Steppe",
+                    "Desert",
+                    "Wetland"
+                ]
+            },
+            xAxis: [
+                {
+                    type: "category",
+                    axisTick: {
+                        show: false
+                    },
+                    data: [
+                        "2012",
+                        "2013",
+                        "2014",
+                        "2015",
+                        "2016"
+                    ]
+                }
+            ],
+            yAxis: [
+                {
+                    type: "value"
+                }
+            ],
+            series: [
+                {
+                    name: "Forest",
+                    type: "bar",
+                    barGap: 0,
+                    emphasis: {
+                        focus: "series"
+                    },
+                    data: [
+                        320,
+                        332,
+                        301,
+                        334,
+                        390
+                    ]
+                },
+                {
+                    name: "Steppe",
+                    type: "bar",
+                    emphasis: {
+                        focus: "series"
+                    },
+                    data: [
+                        220,
+                        182,
+                        191,
+                        234,
+                        290
+                    ]
+                },
+                {
+                    name: "Desert",
+                    type: "bar",
+                    emphasis: {
+                        focus: "series"
+                    },
+                    data: [
+                        150,
+                        232,
+                        201,
+                        154,
+                        190
+                    ]
+                },
+                {
+                    name: "Wetland",
+                    type: "bar",
+                    emphasis: {
+                        focus: "series"
+                    },
+                    data: [
+                        98,
+                        77,
+                        101,
+                        99,
+                        40
+                    ]
+                }
+            ]
+        };
+        this.shadowRoot.innerHTML = `
+            <style>
+                /* Add your styles here */
+            </style>
+            <div>
+            
+                <my-chart data='${JSON.stringify(chartData)}'></my-chart>
+            </div>
+        `;
+    }
+}
+customElements.define('page-chart', PageChart);
 
 },{}]},["yA1mW","l7a58"], "l7a58", "parcelRequire94c2")
 

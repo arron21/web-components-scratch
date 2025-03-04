@@ -8,3 +8,5 @@ import './components/MyPokemonSprites.js';
 import './components/MySearchPokemon.js';
 import './components/Clock.js'
 import './components/Timer.js'
+import './components/Chart.js'
+import './components/PageChart.js'
