@@ -27,15 +27,3 @@ jobs:
 
       - name: Build project
         run: npm run build  # Or your build command (e.g., npm run build:prod)
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-artifact
-          path: ${{ github.workspace }}/dist/
-          retention-days: 1
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v3 # Use a version that correctly handles the 'path' input
-        with:
-          artifact_name: dist-artifact
