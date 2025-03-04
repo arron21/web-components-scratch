@@ -16,8 +16,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # updated to node 20
-          cache: 'npm' # enables npm caching
+          node-version: '20'
+          cache: 'npm'
       - name: clean npm cache
         run: npm cache clean --force
 
@@ -28,10 +28,10 @@ jobs:
         run: npm run build
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4 # explicitly using v4
+        uses: actions/upload-artifact@v4
         with:
           name: dist-artifact
-          path: './dist'
+          path: ${{ github.workspace }}/dist # using absolute path
 
   deploy:
     needs: build
@@ -47,4 +47,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v3
         with:
-          artifact_name: dist-artifact # This line was the problem.
+          artifact_name: dist-artifact
