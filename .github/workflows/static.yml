@@ -47,4 +47,4 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v3
         with:
-          artifact_name: dist-artifact
+          artifact_name: dist-artifact # This line was the problem.
