@@ -657,8 +657,10 @@ var _myPokemonDetailsJs = require("./components/MyPokemonDetails.js");
 var _myPokemonCryJs = require("./components/MyPokemonCry.js");
 var _myPokemonSpritesJs = require("./components/MyPokemonSprites.js");
 var _mySearchPokemonJs = require("./components/MySearchPokemon.js");
+var _clockJs = require("./components/Clock.js");
+var _timerJs = require("./components/Timer.js");
 
-},{"./components/MyHomePage.js":"b3L0h","./components/MyAboutPage.js":"6SDqT","./components/MyContactPage.js":"gJgSZ","./components/MyFetchTest.js":"7AheT","./components/MyPokemonDetails.js":"f16od","./components/MyPokemonCry.js":"6YbA4","./components/MyPokemonSprites.js":"29ZLN","./components/MySearchPokemon.js":"doBR1"}],"b3L0h":[function(require,module,exports,__globalThis) {
+},{"./components/MyHomePage.js":"b3L0h","./components/MyAboutPage.js":"6SDqT","./components/MyContactPage.js":"gJgSZ","./components/MyFetchTest.js":"7AheT","./components/MyPokemonDetails.js":"f16od","./components/MyPokemonCry.js":"6YbA4","./components/MyPokemonSprites.js":"29ZLN","./components/MySearchPokemon.js":"doBR1","./components/Clock.js":"2ZPwe","./components/Timer.js":"b51J9"}],"b3L0h":[function(require,module,exports,__globalThis) {
 class MyHomePage extends HTMLElement {
     constructor(){
         super();
@@ -976,6 +978,100 @@ class MySearchPokemon extends HTMLElement {
 }
 customElements.define('my-search-pokemon', MySearchPokemon);
 
-},{"../state/state":"k3jRp"}]},["yA1mW","l7a58"], "l7a58", "parcelRequire94c2")
+},{"../state/state":"k3jRp"}],"2ZPwe":[function(require,module,exports,__globalThis) {
+class Clock extends HTMLElement {
+    constructor(){
+        super();
+        this.attachShadow({
+            mode: 'open'
+        });
+        this.updateTime = this.updateTime.bind(this);
+    }
+    connectedCallback() {
+        this.render();
+        this.updateTime();
+        this.interval = setInterval(this.updateTime, 1000);
+    }
+    disconnectedCallback() {
+        clearInterval(this.interval);
+    }
+    updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        this.shadowRoot.querySelector('#time').textContent = timeString;
+    }
+    render() {
+        this.shadowRoot.innerHTML = `
+            <style>
+                /* Add your styles here */
+            </style>
+            <div>
+                Current Time: <span id="time"></span>
+            </div>
+        `;
+    }
+}
+customElements.define('my-clock', Clock);
+
+},{}],"b51J9":[function(require,module,exports,__globalThis) {
+class Timer extends HTMLElement {
+    constructor(){
+        super();
+        this.attachShadow({
+            mode: 'open'
+        });
+        this.time = 0;
+        this.interval = null;
+        this.startTimer = this.startTimer.bind(this);
+        this.stopTimer = this.stopTimer.bind(this);
+        this.resetTimer = this.resetTimer.bind(this);
+    }
+    connectedCallback() {
+        this.render();
+        this.shadowRoot.querySelector('#start').addEventListener('click', this.startTimer);
+        this.shadowRoot.querySelector('#stop').addEventListener('click', this.stopTimer);
+        this.shadowRoot.querySelector('#reset').addEventListener('click', this.resetTimer);
+    }
+    disconnectedCallback() {
+        this.shadowRoot.querySelector('#start').removeEventListener('click', this.startTimer);
+        this.shadowRoot.querySelector('#stop').removeEventListener('click', this.stopTimer);
+        this.shadowRoot.querySelector('#reset').removeEventListener('click', this.resetTimer);
+    }
+    startTimer() {
+        if (!this.interval) this.interval = setInterval(()=>{
+            this.time += 1;
+            this.updateTime();
+        }, 1000);
+    }
+    stopTimer() {
+        clearInterval(this.interval);
+        this.interval = null;
+    }
+    resetTimer() {
+        this.time = 0;
+        this.updateTime();
+    }
+    updateTime() {
+        this.shadowRoot.querySelector('#time').textContent = this.time;
+    }
+    render() {
+        this.shadowRoot.innerHTML = `
+            <style>
+                /* Add your styles here */
+            </style>
+            <div>
+                Timer: <span id="time">0</span> seconds
+                <div>
+                    <button id="start">Start</button>
+                    <button id="stop">Stop</button>
+                    <button id="reset">Reset</button>
+                </div>
+            </div>
+        `;
+    }
+}
+customElements.define('my-timer', Timer);
+
+},{}]},["yA1mW","l7a58"], "l7a58", "parcelRequire94c2")
 
 //# sourceMappingURL=index.d648b2f6.js.map

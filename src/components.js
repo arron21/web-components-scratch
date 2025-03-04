@@ -6,3 +6,5 @@ import './components/MyPokemonDetails.js';
 import './components/MyPokemonCry.js';
 import './components/MyPokemonSprites.js';
 import './components/MySearchPokemon.js';
+import './components/Clock.js'
+import './components/Timer.js'

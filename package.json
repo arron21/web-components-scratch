@@ -2,7 +2,7 @@
   "name": "stand-router",
   "version": "1.0.0",
   "scripts": {
-    "start": "parcel ./src/index.html --open",
+    "start": "parcel --no-cache ./src/index.html --open",
     "build": "parcel build ./src/index.html"
   },
   "keywords": [],
