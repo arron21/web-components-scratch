@@ -38,4 +38,4 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v3 # Use a version that correctly handles the 'path' input
         with:
-          path: dist/       # Deploy the contents of the 'dist' directory.  Trailing slash!
+          artifact_name: dist-artifact
