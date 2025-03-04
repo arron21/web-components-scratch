@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main # or master
+      - main  # or master
 
 jobs:
   build:
@@ -17,9 +17,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-      - name: clean npm cache
-        run: npm cache clean --force
+          cache: 'npm'  #  Keep caching for faster builds
+
+      # No need to force clean the cache every time.  npm handles this well.
+      # - name: clean npm cache
+      #   run: npm cache clean --force
 
       - name: Install dependencies
         run: npm install
@@ -30,10 +32,10 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist-artifact
-          path: ${{ github.workspace }}/dist
-          # Add this line to show the uploaded path in the logs:
-          enable-diagnostics: true
+          name: dist-artifact  # Consistent artifact name
+          path: ${{ github.workspace }}/dist/   #  Important:  Trailing slash for directory upload!
+          retention-days: 1 #Optional: keeps artifacts for 1 day
+
 
   deploy:
     needs: build
@@ -45,15 +47,16 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for artifact processing
-        run: sleep 15
+      # No need for a "wait" step anymore. download-artifact will fail if it's not ready.
+
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: dist-artifact
-          path: downloaded-artifact
+          name: dist-artifact  #  Match the upload name
+          path: dist          # Download directly into the 'dist' directory in the root.
+
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v3
+        uses: actions/deploy-pages@v4 #updated to latest version
         with:
-          artifact_name: dist-artifact
+          path: dist/      # Deploy from the 'dist' directory. Trailing slash is important
