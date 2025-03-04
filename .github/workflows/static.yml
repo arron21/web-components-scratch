@@ -16,17 +16,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18 # Or your desired Node.js version
+          node-version: '20' # updated to node 20
+          cache: 'npm' # enables npm caching
+      - name: clean npm cache
+        run: npm cache clean --force
 
       - name: Install dependencies
-        run: npm install # or yarn install
+        run: npm install
 
       - name: Build project
-        run: npm run build # or yarn build
+        run: npm run build
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2 # updated to v2.
+        uses: actions/upload-artifact@v4 # explicitly using v4
         with:
+          name: dist-artifact
           path: './dist'
 
   deploy:
@@ -41,4 +45,6 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v3 # updated to v3
+        uses: actions/deploy-pages@v3
+        with:
+          artifact_name: dist-artifact
