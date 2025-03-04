@@ -17,11 +17,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'  #  Keep caching for faster builds
-
-      # No need to force clean the cache every time.  npm handles this well.
-      # - name: clean npm cache
-      #   run: npm cache clean --force
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
@@ -32,10 +28,9 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dist-artifact  # Consistent artifact name
-          path: ${{ github.workspace }}/dist/   #  Important:  Trailing slash for directory upload!
-          retention-days: 1 #Optional: keeps artifacts for 1 day
-
+          name: dist-artifact
+          path: ${{ github.workspace }}/dist/
+          retention-days: 1
 
   deploy:
     needs: build
@@ -47,16 +42,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      # No need for a "wait" step anymore. download-artifact will fail if it's not ready.
-
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: dist-artifact  #  Match the upload name
-          path: dist          # Download directly into the 'dist' directory in the root.
+          name: dist-artifact
+          path: dist
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 #updated to latest version
-        with:
-          path: dist/      # Deploy from the 'dist' directory. Trailing slash is important
+        uses: actions/deploy-pages@v3  #  <--  CRITICAL: Use v3, as v4 doesn't work with path
