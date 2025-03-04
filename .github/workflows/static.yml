@@ -32,6 +32,8 @@ jobs:
         with:
           name: dist-artifact
           path: ${{ github.workspace }}/dist
+          # Add this line to show the uploaded path in the logs:
+          enable-diagnostics: true
 
   deploy:
     needs: build
